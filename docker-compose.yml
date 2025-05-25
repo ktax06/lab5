@@ -1,0 +1,44 @@
+services:
+  web:
+    build: .
+    container_name: nginx-demo
+    ports:
+      - "8080:80"
+    volumes:
+      # Opcional: Montar el directorio actual para que los cambios en index.html o nginx.conf
+      # se reflejen sin reconstruir la imagen (útil para desarrollo)
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/nginx.conf:ro
+      - ./frontend/index.html:/usr/share/nginx/html/index.html:ro
+    restart: always
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fastapi-backend
+    ports:
+      - "8000:8000" # FastAPI escuchará en el puerto 8000 dentro del contenedor y del host
+    volumes:
+      - ./backend/app:/app # Monta el código de la aplicación FastAPI
+    environment:
+      DATABASE_URL: mysql+mysqlconnector://user:password@db/mydatabase # URL de conexión a la BBDD
+    depends_on:
+      - db # El backend depende de la base de datos
+    restart: always
+
+  db:
+    image: mysql:8.0 # Usamos la imagen oficial de MySQL 8.0
+    container_name: mysql-db
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password # Contraseña para el usuario root
+      MYSQL_DATABASE: mydatabase        # Nombre de la base de datos
+      MYSQL_USER: user                  # Usuario para la base de datos
+      MYSQL_PASSWORD: password          # Contraseña para el usuario de la base de datos
+    volumes:
+      - db_data:/var/lib/mysql # Persistencia de datos para MySQL
+    ports:
+      - "3306:3306" # Exponemos el puerto de MySQL al host (opcional, útil para herramientas externas)
+    restart: always
+
+volumes:
+  db_data: # Define el volumen para la persistencia de datos de MySQL

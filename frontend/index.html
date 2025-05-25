@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nginx + FastAPI + MySQL</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            color: #333;
+            text-align: center;
+        }
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+        h1 {
+            color: #007bff;
+        }
+        p {
+            font-size: 1.2em;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        #data-output {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+            text-align: left;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>¡Nginx, FastAPI y MySQL en acción!</h1>
+        <p>Esta página es servida por Nginx.</p>
+        <p>Haga clic en el botón para obtener un mensaje del backend FastAPI y la base de datos MySQL.</p>
+
+        <button onclick="fetchData()">Obtener Datos del Backend</button>
+
+        <div id="data-output">
+            Cargando...
+        </div>
+    </div>
+
+    <script>
+        async function fetchData() {
+            const outputDiv = document.getElementById('data-output');
+            outputDiv.innerHTML = 'Obteniendo datos del backend...';
+            try {
+                const response = await fetch('/api/items/');
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                const data = await response.json();
+                outputDiv.innerHTML = `
+                    <h3>Datos del Backend:</h3>
+                    <p><strong>Mensaje:</strong> ${data.message}</p>
+                    <p><strong>ID del primer elemento de la DB:</strong> ${data.db_item_id}</p>
+                    <p><strong>Nombre del primer elemento de la DB:</strong> ${data.db_item_name}</p>
+                    <p><strong>Versión de MySQL:</strong> ${data.mysql_version}</p>
+                `;
+            } catch (error) {
+                outputDiv.innerHTML = `<p class="error">Error al obtener datos del backend: ${error.message}</p>`;
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        // Cargar datos al cargar la página
+        window.onload = fetchData;
+    </script>
+</body>
+</html>
